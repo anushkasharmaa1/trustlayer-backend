@@ -1,0 +1,12 @@
+{
+  "features": [
+    "income_stability",
+    "spending_consistency",
+    "savings_ratio",
+    "transaction_frequency",
+    "avg_monthly_income",
+    "avg_monthly_spending"
+  ],
+  "auc": 0.8324564548621303,
+  "cv_auc": 0.829374580532417
+}
