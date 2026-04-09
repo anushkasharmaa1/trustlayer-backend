@@ -48,12 +48,52 @@ def _coefficient_of_variation(values: list[float]) -> float:
     return float(np.std(arr) / mean)
 
 
+def detect_anomalies(transactions: list[dict]) -> list[str]:
+    """
+    Basic anomaly detection for anti-gaming.
+    
+    Returns a list of warning messages if suspicious patterns are detected.
+    """
+    warnings = []
+    
+    if not transactions:
+        return warnings
+    
+    amounts = [txn["amount"] for txn in transactions]
+    
+    # Check for round numbers
+    round_count = sum(1 for amt in amounts if amt % 100 == 0)
+    if round_count / len(amounts) > 0.8:
+        warnings.append("High proportion of round number transactions detected")
+    
+    # Check for weekend transactions
+    weekend_txns = 0
+    total_txns = len(transactions)
+    for txn in transactions:
+        from datetime import datetime
+        try:
+            dt = datetime.fromisoformat(txn["date"])
+            if dt.weekday() >= 5:  # Saturday=5, Sunday=6
+                weekend_txns += 1
+        except:
+            pass
+    if weekend_txns == 0 and total_txns > 10:
+        warnings.append("No weekend transactions detected")
+    
+    # Check for identical income values
+    credits = [txn["amount"] for txn in transactions if txn["type"] == "credit"]
+    if len(credits) > 1 and len(set(credits)) == 1:
+        warnings.append("All income transactions have identical amounts")
+    
+    return warnings
+
+
 def extract_features(transactions: list[dict]) -> FeatureBreakdown:
     """
     Derive behavioral financial features from a flat list of transactions.
 
     Args:
-        transactions: list of dicts with keys: amount, type, date
+        transactions: list of dicts with keys: amount, type, date, sender?, description?, category?
 
     Returns:
         FeatureBreakdown with all computed metrics.
@@ -67,6 +107,11 @@ def extract_features(transactions: list[dict]) -> FeatureBreakdown:
             transaction_frequency=0.0,
             avg_monthly_income=0.0,
             avg_monthly_spending=0.0,
+            income_regular_day_variance=1.0,
+            income_source_count=0,
+            essential_spend_ratio=0.0,
+            savings_transfer_frequency=0.0,
+            cash_withdrawal_ratio=0.0,
         )
 
     monthly = _group_by_month(transactions)
@@ -95,6 +140,30 @@ def extract_features(transactions: list[dict]) -> FeatureBreakdown:
     total_txns           = len(transactions)
     transaction_frequency = total_txns / num_months
 
+    # New features
+    # Income regularity: variance in payment days
+    income_days = [int(txn["date"][-2:]) for txn in transactions if txn["type"] == "credit"]
+    income_regular_day_variance = float(np.var(income_days)) if income_days else 1.0
+
+    # Income source diversity: distinct senders
+    senders = [txn.get("sender", f"unknown_{txn['amount']}") for txn in transactions if txn["type"] == "credit"]
+    income_source_count = len(set(senders))
+
+    # Essential spending ratio
+    essential_categories = {"rent", "utilities", "telecom", "insurance", "loan_payment"}
+    essential_spending = sum(txn["amount"] for txn in transactions 
+                           if txn["type"] == "debit" and txn.get("category") in essential_categories)
+    essential_spend_ratio = essential_spending / total_spending if total_spending > 0 else 0.0
+
+    # Savings transfer frequency
+    savings_txns = [txn for txn in transactions if txn["type"] == "debit" and txn.get("category") == "savings"]
+    savings_transfer_frequency = len(savings_txns) / num_months
+
+    # Cash withdrawal ratio
+    cash_withdrawals = sum(txn["amount"] for txn in transactions 
+                          if txn["type"] == "debit" and txn.get("category") == "cash_withdrawal")
+    cash_withdrawal_ratio = cash_withdrawals / total_spending if total_spending > 0 else 0.0
+
     return FeatureBreakdown(
         income_stability=round(income_stability, 4),
         spending_consistency=round(spending_consistency, 4),
@@ -102,4 +171,9 @@ def extract_features(transactions: list[dict]) -> FeatureBreakdown:
         transaction_frequency=round(transaction_frequency, 2),
         avg_monthly_income=round(avg_income, 2),
         avg_monthly_spending=round(avg_spending, 2),
+        income_regular_day_variance=round(income_regular_day_variance, 4),
+        income_source_count=income_source_count,
+        essential_spend_ratio=round(essential_spend_ratio, 4),
+        savings_transfer_frequency=round(savings_transfer_frequency, 2),
+        cash_withdrawal_ratio=round(cash_withdrawal_ratio, 4),
     )
