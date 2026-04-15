@@ -1,13 +1,3 @@
-"""
-memory_store.py
----------------
-Simple in-memory key-value store used when PostgreSQL is unavailable.
-Data is lost on server restart — suitable for development and demos.
-
-Thread-safety: uses a plain dict. FastAPI runs in a single async event loop,
-so concurrent coroutines are safe. For true multi-threaded use, wrap with asyncio.Lock.
-"""
-
 from collections import defaultdict
 
 
@@ -35,3 +25,7 @@ class MemoryStore:
 
     def user_exists(self, user_id: str) -> bool:
         return user_id in self._store and len(self._store[user_id]) > 0
+
+
+# ✅ create a global store instance
+transaction_store = MemoryStore()

@@ -25,6 +25,18 @@ class Transaction(BaseModel):
         ...,
         description="Transaction date in YYYY-MM-DD format.",
     )
+    sender: str | None = Field(
+        None,
+        description="Sender name for credit transactions (e.g., employer, client).",
+    )
+    description: str | None = Field(
+        None,
+        description="Transaction description or memo.",
+    )
+    category: str | None = Field(
+        None,
+        description="Transaction category (e.g., 'income', 'rent', 'groceries', 'savings', 'cash_withdrawal').",
+    )
 
     @field_validator("date")
     @classmethod

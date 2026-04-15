@@ -14,8 +14,13 @@ Score derivation:
   We invert and scale: Trust Score = (1 - P(default)) * 1000
   This means a lower default probability = higher trust score.
 """
-
+import json
+import joblib
+import numpy as np
+from pathlib import Path
 from services.feature_engineering import detect_anomalies
+from models.response_model import TrustScoreResponse, FeatureBreakdown
+
 
 MODEL_DIR   = Path(__file__).parent.parent / "models_ml"
 _model      = None
@@ -85,17 +90,19 @@ def _rule_based_score(features):
 
 # ── ML scoring ────────────────────────────────────────────────────────────
 def _ml_score(features):
+    # Feature order must match the trained model's expectations from model_metadata.json
     feature_vector = [[
-        features.income_regular_day_variance,
-        features.income_source_count,
-        features.essential_spend_ratio,
-        features.savings_transfer_frequency,
-        features.cash_withdrawal_ratio,
-        features.avg_monthly_income,
+        features.transaction_frequency,      # 1. transaction_frequency
+        features.income_source_count,        # 2. income_source_count
+        features.avg_monthly_income,         # 3. avg_income
+        features.income_regular_day_variance, # 4. income_variance
+        features.essential_spend_ratio,      # 5. essential_spend_ratio
+        features.cash_withdrawal_ratio,      # 6. cash_withdrawal_ratio
     ]]
     scaled    = _scaler.transform(feature_vector)
     p_default = _model.predict_proba(scaled)[0][1]
-    return max(0, min(1000, int(round((1 - p_default) * 1000))))
+    trust_score = int(round((1 - p_default) * 1000))
+    return max(0, min(1000, trust_score))
 
 # ── Explanations + risk classification ───────────────────────────────────
 def _build_signals(features):
@@ -147,9 +154,10 @@ def _build_explanations(features, positive_signals, risk_signals):
     return explanations
 
 def _classify_risk(score):
-    if score >= 700: return "low"
-    if score >= 400: return "medium"
-    return "high"
+    if score >= 750: return "Low Risk"
+    elif score >= 600: return "Moderate Risk"
+    elif score >= 450: return "High Risk"
+    else: return "Very High Risk"
 
 # ── Public API ────────────────────────────────────────────────────────────
 def compute_trust_score(features: FeatureBreakdown, transactions: list[dict] | None = None) -> TrustScoreResponse:

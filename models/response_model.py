@@ -30,6 +30,21 @@ class FeatureBreakdown(BaseModel):
     avg_monthly_spending: float = Field(
         ..., description="Mean monthly debit (spending) in INR."
     )
+    income_regular_day_variance: float = Field(
+        ..., description="Variance in income payment days (lower = more regular)."
+    )
+    income_source_count: int = Field(
+        ..., description="Number of distinct income sources."
+    )
+    essential_spend_ratio: float = Field(
+        ..., description="Ratio of spending on essentials (rent, utilities, etc.) to total spending."
+    )
+    savings_transfer_frequency: float = Field(
+        ..., description="Frequency of transfers to savings/investment accounts per month."
+    )
+    cash_withdrawal_ratio: float = Field(
+        ..., description="Ratio of cash withdrawals to total spending."
+    )
 
 
 class TrustScoreResponse(BaseModel):
@@ -38,8 +53,14 @@ class TrustScoreResponse(BaseModel):
     trust_score: int = Field(
         ..., ge=0, le=1000, description="Composite behavioral credit score (0-1000)."
     )
-    risk_level: Literal["low", "medium", "high"] = Field(
+    risk_level: Literal["Low Risk", "Moderate Risk", "High Risk", "Very High Risk"] = Field(
         ..., description="Derived risk classification based on trust_score."
+    )
+    top_positive_signals: list[str] = Field(
+        ..., description="Key positive behavioral signals contributing to the score."
+    )
+    risk_signals: list[str] = Field(
+        ..., description="Key risk signals that may lower the score."
     )
     features: FeatureBreakdown
     explanation: list[str] = Field(

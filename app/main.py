@@ -15,7 +15,8 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.database import startup_db, shutdown_db
-from routes import transactions, scoring, simulation
+from routes import transactions, scoring, simulation, report
+from fastapi.middleware.cors import CORSMiddleware
 
 settings = get_settings()
 
@@ -43,10 +44,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Allow frontend dashboard to call API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # --- Route registration ---
 app.include_router(transactions.router, tags=["Transactions"])
 app.include_router(scoring.router,      tags=["Scoring"])
 app.include_router(simulation.router,   tags=["Simulation"])
+app.include_router(report.router, tags=["Report"])
 
 
 # ---------------------------------------------------------------------------

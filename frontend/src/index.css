@@ -1,0 +1,123 @@
+body {
+  background: #0b1220;
+  color: white;
+  font-family: Inter, sans-serif;
+}
+
+.dashboard {
+  padding: 40px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.top {
+  display: flex;
+  gap: 30px;
+}
+
+.score-card {
+  background: #121c2e;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+}
+
+.gauge {
+  text-align: center;
+  position: relative;
+}
+
+.score {
+  font-size: 48px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.metrics {
+  display: flex;
+  gap: 20px;
+}
+
+.metric {
+  background: #121c2e;
+  padding: 20px;
+  border-radius: 12px;
+  width: 180px;
+}
+
+.range-bar {
+  background: linear-gradient(
+    to right,
+    red,
+    orange,
+    yellow,
+    green
+  );
+  height: 10px;
+  border-radius: 10px;
+  position: relative;
+  margin-top: 10px;
+}
+
+.marker {
+  position: absolute;
+  top: -20px;
+  color: #7cff7c;
+}
+
+.bottom {
+  margin-top: 40px;
+  display: flex;
+  gap: 40px;
+}
+
+.signals {
+  flex: 1;
+  background: #121c2e;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.signal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bar {
+  flex: 1;
+  height: 8px;
+  background: #2a3550;
+  border-radius: 10px;
+}
+
+.fill {
+  background: #4c7dff;
+  height: 100%;
+  border-radius: 10px;
+}
+
+.radar {
+  width: 400px;
+  background: #121c2e;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+}
+
+.error {
+  color: #ff6b6b;
+}.\venv\Scripts\activate

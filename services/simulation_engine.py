@@ -79,7 +79,7 @@ def simulate_score(
     """
     # Step 1: compute baseline score from original data
     original_features = extract_features(original_transactions)
-    original_result   = compute_trust_score(original_features)
+    original_result   = compute_trust_score(original_features, original_transactions)
 
     # Step 2: apply hypothetical changes to a copy
     simulated = copy.deepcopy(original_transactions)
@@ -88,11 +88,13 @@ def simulate_score(
 
     # Step 3: compute simulated score
     sim_features = extract_features(simulated)
-    sim_result   = compute_trust_score(sim_features)
+    sim_result   = compute_trust_score(sim_features, simulated)
 
     return SimulationResponse(
         trust_score=sim_result.trust_score,
         risk_level=sim_result.risk_level,
+        top_positive_signals=sim_result.top_positive_signals,
+        risk_signals=sim_result.risk_signals,
         features=sim_result.features,
         explanation=sim_result.explanation,
         original_score=original_result.trust_score,

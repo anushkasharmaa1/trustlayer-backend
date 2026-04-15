@@ -43,6 +43,6 @@ async def get_score(
         )
 
     features = extract_features(transactions)
-    result   = compute_trust_score(features)
+    result   = compute_trust_score(features, transactions)
 
     return result
